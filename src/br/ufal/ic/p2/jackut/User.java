@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * Representa um usuário no sistema Jackut.
+ * Represents a user in the Jackut system.
+ * Contains all user information including profile, friends and messages.
  */
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -13,156 +14,153 @@ public class User implements Serializable {
     private String password;
     private String name;
     private Map<String, String> profile;
-    private List<User> friends;
+    private Set<String> friendRequests;
+    private Set<String> friends;
     private Queue<Message> messages;
-    private Set<User> pendingFriendRequests;
 
     /**
-     * Cria um novo usuário com o login, senha e nome fornecidos.
+     * Constructor creates a new user with the given credentials.
      *
-     * @param login Login do usuário (identificador único)
-     * @param password Senha do usuário
-     * @param name Nome de exibição do usuário
+     * @param login User's login
+     * @param password User's password
+     * @param name User's name
      */
     public User(String login, String password, String name) {
         this.login = login;
         this.password = password;
         this.name = name;
         this.profile = new HashMap<>();
-        this.friends = new ArrayList<>();
+        this.profile.put("nome", name);
+        this.friendRequests = new HashSet<>();
+        this.friends = new HashSet<>();
         this.messages = new LinkedList<>();
-        this.pendingFriendRequests = new HashSet<>();
-
-        // Inicializa o perfil com o nome
-        profile.put("nome", name);
     }
 
     /**
-     * Autentica o usuário com a senha fornecida.
+     * Gets the user's login.
      *
-     * @param password Senha a ser verificada
-     * @return true se a autenticação for bem-sucedida, false caso contrário
-     */
-    public boolean authenticate(String password) {
-        return this.password.equals(password);
-    }
-
-    /**
-     * Obtém o login do usuário.
-     *
-     * @return O login do usuário
+     * @return User's login
      */
     public String getLogin() {
         return login;
     }
 
     /**
-     * Obtém o nome do usuário.
+     * Gets the user's password.
      *
-     * @return O nome do usuário
+     * @return User's password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Gets the user's name.
+     *
+     * @return User's name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Obtém o valor de um atributo do perfil.
+     * Gets a profile attribute value.
      *
-     * @param attribute O nome do atributo
-     * @return O valor do atributo ou null se não for encontrado
+     * @param attribute Attribute name
+     * @return The attribute value
+     * @throws IllegalArgumentException if attribute is not set
      */
     public String getProfileAttribute(String attribute) {
-        return profile.get(attribute);
+        if (profile.containsKey(attribute)) {
+            return profile.get(attribute);
+        }
+        throw new IllegalArgumentException("Atributo não preenchido.");
     }
 
     /**
-     * Define o valor de um atributo do perfil.
+     * Sets a profile attribute value.
      *
-     * @param attribute O nome do atributo
-     * @param value O novo valor para o atributo
+     * @param attribute Attribute name
+     * @param value Attribute value
      */
     public void setProfileAttribute(String attribute, String value) {
         profile.put(attribute, value);
     }
 
     /**
-     * Adiciona um amigo à lista de amigos deste usuário se o outro usuário já
-     * tiver enviado uma solicitação de amizade.
+     * Adds a friend request.
      *
-     * @param user O usuário a ser adicionado como amigo
+     * @param login Friend's login
+     * @throws IllegalArgumentException if request already exists
      */
-    public void addFriend(User user) {
-        if (user.pendingFriendRequests.contains(this)) {
-            // Amizade mútua estabelecida
-            friends.add(user);
-            user.confirmFriendship(this);
-        } else {
-            // Envia solicitação de amizade
-            user.pendingFriendRequests.add(this);
+    public void addFriendRequest(String login) {
+        if (friendRequests.contains(login)) {
+            throw new IllegalArgumentException("Usuário já está adicionado como amigo, esperando aceitação do convite.");
         }
-    }
-
-    /**
-     * Confirma amizade com outro usuário.
-     * Chamado quando o outro usuário aceita a solicitação de amizade deste usuário.
-     *
-     * @param user O usuário que aceitou a solicitação de amizade
-     */
-    private void confirmFriendship(User user) {
-        pendingFriendRequests.remove(user);
-        friends.add(user);
-    }
-
-    /**
-     * Verifica se este usuário é amigo de outro usuário.
-     *
-     * @param user O usuário para verificar a amizade
-     * @return true se forem amigos, false caso contrário
-     */
-    public boolean isFriendWith(User user) {
-        return friends.contains(user);
-    }
-
-    /**
-     * Obtém uma string formatada com a lista de amigos.
-     *
-     * @return Uma string contendo nomes de amigos separados por vírgulas
-     */
-    public String getFriendsListAsString() {
-        if (friends.isEmpty()) {
-            return "";
+        if (friends.contains(login)) {
+            throw new IllegalArgumentException("Usuário já está adicionado como amigo.");
         }
-
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < friends.size(); i++) {
-            if (i > 0) {
-                result.append(", ");
-            }
-            result.append(friends.get(i).getLogin());
-        }
-        return result.toString();
+        friendRequests.add(login);
     }
 
     /**
-     * Recebe uma mensagem de outro usuário.
+     * Accepts a friend request.
      *
-     * @param message A mensagem a ser recebida
+     * @param login Friend's login
      */
-    public void receiveMessage(Message message) {
+    public void acceptFriendRequest(String login) {
+        friendRequests.remove(login);
+        friends.add(login);
+    }
+
+    /**
+     * Checks if the user has sent a friend request to another user.
+     *
+     * @param login Other user's login
+     * @return true if request exists, false otherwise
+     */
+    public boolean hasFriendRequest(String login) {
+        return friendRequests.contains(login);
+    }
+
+    /**
+     * Checks if the user is friends with another user.
+     *
+     * @param login Other user's login
+     * @return true if they are friends, false otherwise
+     */
+    public boolean isFriendWith(String login) {
+        return friends.contains(login);
+    }
+
+    /**
+     * Gets the list of friends.
+     *
+     * @return List of friends' logins
+     */
+    public List<String> getFriends() {
+        return new ArrayList<>(friends);
+    }
+
+    /**
+     * Adds a message to the user's inbox.
+     *
+     * @param message The message to add
+     */
+    public void addMessage(Message message) {
         messages.add(message);
     }
 
     /**
-     * Lê a próxima mensagem na fila.
+     * Reads the next message from the inbox.
      *
-     * @return O conteúdo da mensagem ou notificação se não houver mensagens disponíveis
+     * @return The message content
+     * @throws IllegalArgumentException if inbox is empty
      */
     public String readNextMessage() {
         if (messages.isEmpty()) {
-            return "Não há recados";
+            throw new IllegalArgumentException("Não há recados.");
         }
-
-        Message message = messages.poll();
-        return message.getFormattedContent();
+        return messages.poll().getContent();
     }
 }

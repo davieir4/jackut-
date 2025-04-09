@@ -2,266 +2,207 @@ package br.ufal.ic.p2.jackut;
 
 import br.ufal.ic.p2.jackut.Exceptions.InvalidLoginException;
 import br.ufal.ic.p2.jackut.Exceptions.UserAlredyExistsException;
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+
+
+import java.util.List;
+import java.util.UUID;
 
 /**
- * A classe Facade serve como a principal interface para o sistema Jackut.
- * Ela implementa todos os comandos definidos na linguagem de script EasyAccept.
+ * Facade class that provides access to the Jackut system functionality.
+ * This class serves as the entry point for the EasyAccept tests.
  */
 public class Facade {
-    private Map<String, User> users;
-    private Map<String, Session> activeSessions;
-    private static final String DATA_FILE = "jackut_data.ser";
+    private UserManager userManager;
+    private SessionManager sessionManager;
+    private SystemPersistence persistence;
 
     /**
-     * Construtor inicializa o repositório de usuários e o gerenciador de sessões.
-     * Carrega dados salvos anteriormente, se existirem.
+     * Constructor initializes the managers and loads data from persistent storage if available.
      */
     public Facade() {
-        this.users = new HashMap<>();
-        this.activeSessions = new HashMap<>();
-        carregarDados();
+        this.persistence = new SystemPersistence();
+        this.userManager = persistence.loadSystem();
+        if (this.userManager == null) {
+            this.userManager = new UserManager();
+        }
+        this.sessionManager = new SessionManager();
     }
 
     /**
-     * Limpa todos os dados do sistema.
+     * Clears all data from the system.
      */
     public void zerarSistema() {
-        users.clear();
-        activeSessions.clear();
-        salvarDados();
+        this.userManager = new UserManager();
+        this.sessionManager = new SessionManager();
     }
 
     /**
-     * Cria um novo usuário com o login, senha e nome fornecidos.
+     * Creates a new user in the system.
      *
-     * @param login Login do usuário (identificador único)
-     * @param senha Senha do usuário
-     * @param nome Nome de exibição do usuário
-     * @throws Exception Se um usuário com o login especificado já existir
+     * @param login User's login
+     * @param senha User's password
+     * @param nome User's name
+     * @throws UserAlredyExistsException if a user with the given login already exists
+     * @throws InvalidLoginException if login or password is invalid
      */
-    public void criarUsuario(String login, String senha, String nome) throws Exception {
-        if (login == null || login.isEmpty()) {
-            throw new Exception("Login inválido");
+    public void criarUsuario(String login, String senha, String nome) throws UserAlredyExistsException {
+        if (login == null || login.trim().isEmpty()) {
+            throw new InvalidLoginException("Login inválido.");
         }
-        if (senha == null || senha.isEmpty()) {
-            throw new Exception("Senha inválida");
+        if (senha == null || senha.trim().isEmpty()) {
+            throw new InvalidLoginException("Senha inválida.");
         }
-        if (nome == null || nome.isEmpty()) {
-            throw new Exception("Nome inválido");
-        }
-        if (users.containsKey(login)) {
-            throw new UserAlredyExistsException("Já existe um usuário com este login");
-        }
-
-        User newUser = new User(login, senha, nome);
-        users.put(login, newUser);
-        salvarDados();
+        userManager.registerUser(login, senha, nome);
     }
 
     /**
-     * Abre uma sessão para um usuário com o login e senha fornecidos.
+     * Opens a session for a user, authenticating them with login and password.
      *
-     * @param login Login do usuário
-     * @param senha Senha do usuário
-     * @return Um ID de sessão para o usuário autenticado
-     * @throws Exception Se a autenticação falhar
+     * @param login User's login
+     * @param senha User's password
+     * @return Session ID
+     * @throws InvalidLoginException if login or password is incorrect
      */
-    public String abrirSessao(String login, String senha) throws Exception {
-        User user = users.get(login);
+    public String abrirSessao(String login, String senha) {
+        User user = userManager.authenticateUser(login, senha);
+        return sessionManager.createSession(user);
+    }
+
+    /**
+     * Gets an attribute value from a user's profile.
+     *
+     * @param login User's login
+     * @param atributo Attribute name
+     * @return The value of the attribute
+     * @throws InvalidLoginException if user does not exist
+     * @throws IllegalArgumentException if attribute is not set
+     */
+    public String getAtributoUsuario(String login, String atributo) {
+        User user = userManager.getUserByLogin(login);
         if (user == null) {
-            throw new InvalidLoginException("Usuário inexistente");
-        }
-        if (!user.authenticate(senha)) {
-            throw new Exception("Login ou senha inválidos");
+            throw new InvalidLoginException("Usuário não cadastrado.");
         }
 
-        Session session = new Session(user);
-        activeSessions.put(session.getId(), session);
-        return session.getId();
-    }
-
-    /**
-     * Obtém o valor de um atributo específico do perfil de um usuário.
-     *
-     * @param login Login do usuário
-     * @param atributo O nome do atributo a ser recuperado
-     * @return O valor do atributo ou null se não for encontrado
-     * @throws Exception Se o usuário não existir
-     */
-    public String getAtributoUsuario(String login, String atributo) throws Exception {
-        User user = users.get(login);
-        if (user == null) {
-            throw new InvalidLoginException("Usuário inexistente");
-        }
         return user.getProfileAttribute(atributo);
     }
 
     /**
-     * Modifica um atributo de perfil para o usuário na sessão especificada.
+     * Edits a user's profile attribute.
      *
-     * @param id ID da sessão
-     * @param atributo Nome do atributo a ser modificado
-     * @param valor Novo valor para o atributo
-     * @throws Exception Se a sessão for inválida ou ocorrerem outros erros
+     * @param id Session ID
+     * @param atributo Attribute name
+     * @param valor Attribute value
+     * @throws InvalidLoginException if session is invalid
      */
-    public void editarPerfil(String id, String atributo, String valor) throws Exception {
-        Session session = activeSessions.get(id);
-        if (session == null) {
-            throw new Exception("Sessão inválida");
+    public void editarPerfil(String id, String atributo, String valor) {
+        User user = sessionManager.getUserFromSession(id);
+        if (user == null) {
+            throw new InvalidLoginException("Usuário não cadastrado.");
         }
 
-        User user = session.getUser();
         user.setProfileAttribute(atributo, valor);
-        salvarDados();
     }
 
     /**
-     * Adiciona um amigo ao usuário na sessão especificada.
+     * Adds another user as a friend.
      *
-     * @param id ID da sessão
-     * @param amigo Login do usuário a ser adicionado como amigo
-     * @throws Exception Se a sessão for inválida ou o amigo não existir
+     * @param id Session ID
+     * @param amigo Friend's login
+     * @throws InvalidLoginException if session is invalid or friend doesn't exist
+     * @throws IllegalArgumentException if trying to add self or already added
      */
-    public void adicionarAmigo(String id, String amigo) throws Exception {
-        Session session = activeSessions.get(id);
-        if (session == null) {
-            throw new Exception("Sessão inválida");
-        }
-
-        User friend = users.get(amigo);
-        if (friend == null) {
-            throw new InvalidLoginException("Usuário inexistente");
-        }
-
-        User user = session.getUser();
-        user.addFriend(friend);
-        salvarDados();
-    }
-
-    /**
-     * Verifica se dois usuários são amigos.
-     *
-     * @param login Login do primeiro usuário
-     * @param amigo Login do segundo usuário
-     * @return true se forem amigos, false caso contrário
-     * @throws Exception Se algum dos usuários não existir
-     */
-    public boolean ehAmigo(String login, String amigo) throws Exception {
-        User user = users.get(login);
+    public void adicionarAmigo(String id, String amigo) {
+        User user = sessionManager.getUserFromSession(id);
         if (user == null) {
-            throw new InvalidLoginException("Usuário inexistente");
+            throw new InvalidLoginException("Usuário não cadastrado.");
         }
 
-        User friend = users.get(amigo);
+        if (user.getLogin().equals(amigo)) {
+            throw new IllegalArgumentException("Usuário não pode adicionar a si mesmo como amigo.");
+        }
+
+        User friend = userManager.getUserByLogin(amigo);
         if (friend == null) {
-            throw new InvalidLoginException("Usuário inexistente");
+            throw new InvalidLoginException("Usuário não cadastrado.");
         }
 
-        return user.isFriendWith(friend);
+        userManager.addFriend(user, friend);
     }
 
     /**
-     * Obtém uma lista de amigos para o usuário especificado.
+     * Checks if two users are friends.
      *
-     * @param login Login do usuário
-     * @return Uma string contendo a lista de amigos
-     * @throws Exception Se o usuário não existir
+     * @param login First user's login
+     * @param amigo Second user's login
+     * @return true if they are friends, false otherwise
      */
-    public String getAmigos(String login) throws Exception {
-        User user = users.get(login);
-        if (user == null) {
-            throw new InvalidLoginException("Usuário inexistente");
-        }
-
-        return user.getFriendsListAsString();
+    public boolean ehAmigo(String login, String amigo) {
+        return userManager.areFriends(login, amigo);
     }
 
     /**
-     * Envia uma mensagem do usuário na sessão para um destinatário especificado.
+     * Gets a list of a user's friends.
      *
-     * @param id ID da sessão
-     * @param destinatario Login do destinatário
-     * @param mensagem Conteúdo da mensagem
-     * @throws Exception Se a sessão for inválida ou o destinatário não existir
+     * @param login User's login
+     * @return List of friends' logins
      */
-    public void enviarRecado(String id, String destinatario, String mensagem) throws Exception {
-        Session session = activeSessions.get(id);
-        if (session == null) {
-            throw new Exception("Sessão inválida");
+    public String getAmigos(String login) {
+        List<String> friends = userManager.getFriendsList(login);
+        if (friends.isEmpty()) {
+            return "{}";
         }
 
-        User recipient = users.get(destinatario);
+        return "{" + String.join(",", friends) + "}";
+    }
+
+    /**
+     * Sends a message to another user.
+     *
+     * @param id Session ID
+     * @param destinatario Recipient's login
+     * @param recado Message content
+     * @throws InvalidLoginException if session is invalid or recipient doesn't exist
+     * @throws IllegalArgumentException if trying to send to self
+     */
+    public void enviarRecado(String id, String destinatario, String recado) {
+        User sender = sessionManager.getUserFromSession(id);
+        if (sender == null) {
+            throw new InvalidLoginException("Usuário não cadastrado.");
+        }
+
+        if (sender.getLogin().equals(destinatario)) {
+            throw new IllegalArgumentException("Usuário não pode enviar recado para si mesmo.");
+        }
+
+        User recipient = userManager.getUserByLogin(destinatario);
         if (recipient == null) {
-            throw new InvalidLoginException("Usuário inexistente");
+            throw new InvalidLoginException("Usuário não cadastrado.");
         }
 
-        User sender = session.getUser();
-        Message message = new Message(sender, mensagem);
-        recipient.receiveMessage(message);
-        salvarDados();
+        userManager.sendMessage(sender, recipient, recado);
     }
 
     /**
-     * Lê a primeira mensagem na fila para o usuário na sessão especificada.
+     * Reads the next message from a user's inbox.
      *
-     * @param id ID da sessão
-     * @return O conteúdo da mensagem ou uma notificação se não houver mensagens disponíveis
-     * @throws Exception Se a sessão for inválida
+     * @param id Session ID
+     * @return The message content
+     * @throws InvalidLoginException if session is invalid
+     * @throws IllegalArgumentException if inbox is empty
      */
-    public String lerRecado(String id) throws Exception {
-        Session session = activeSessions.get(id);
-        if (session == null) {
-            throw new Exception("Sessão inválida");
+    public String lerRecado(String id) {
+        User user = sessionManager.getUserFromSession(id);
+        if (user == null) {
+            throw new InvalidLoginException("Usuário não cadastrado.");
         }
 
-        User user = session.getUser();
-        String mensagem = user.readNextMessage();
-        salvarDados();
-        return mensagem;
+        return user.readNextMessage();
     }
 
     /**
-     * Salva todos os dados e encerra o sistema.
+     * Saves the system state and terminates.
      */
     public void encerrarSistema() {
-        salvarDados();
-    }
-
-    /**
-     * Salva os dados do sistema em um arquivo.
-     */
-    private void salvarDados() {
-        try {
-            FileOutputStream fileOut = new FileOutputStream(DATA_FILE);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(users);
-            out.close();
-            fileOut.close();
-        } catch (IOException e) {
-            System.err.println("Erro ao salvar dados: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Carrega os dados do sistema a partir de um arquivo.
-     */
-    @SuppressWarnings("unchecked")
-    private void carregarDados() {
-        try {
-            File file = new File(DATA_FILE);
-            if (file.exists()) {
-                FileInputStream fileIn = new FileInputStream(file);
-                ObjectInputStream in = new ObjectInputStream(fileIn);
-                users = (Map<String, User>) in.readObject();
-                in.close();
-                fileIn.close();
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Erro ao carregar dados: " + e.getMessage());
-            users = new HashMap<>(); // Se houver erro, inicializa com um mapa vazio
-        }
+        persistence.saveSystem(userManager);
     }
 }

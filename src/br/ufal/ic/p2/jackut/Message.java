@@ -1,56 +1,54 @@
 package br.ufal.ic.p2.jackut;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
- * Representa uma mensagem enviada entre usuários no sistema Jackut.
+ * Represents a message in the Jackut system.
  */
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private User sender;
+    private String sender;
+    private String recipient;
     private String content;
-    private Date timestamp;
 
     /**
-     * Cria uma nova mensagem com o remetente e conteúdo especificados.
+     * Constructor creates a new message.
      *
-     * @param sender O usuário que envia a mensagem
-     * @param content O conteúdo da mensagem
+     * @param sender Sender's login
+     * @param recipient Recipient's login
+     * @param content Message content
      */
-    public Message(User sender, String content) {
+    public Message(String sender, String recipient, String content) {
         this.sender = sender;
+        this.recipient = recipient;
         this.content = content;
-        this.timestamp = new Date();
     }
 
     /**
-     * Obtém o remetente desta mensagem.
+     * Gets the sender's login.
      *
-     * @return O usuário que enviou a mensagem
+     * @return Sender's login
      */
-    public User getSender() {
+    public String getSender() {
         return sender;
     }
 
     /**
-     * Obtém o conteúdo da mensagem.
+     * Gets the recipient's login.
      *
-     * @return O texto da mensagem
+     * @return Recipient's login
      */
-    public String getContent() {
-        return content;
+    public String getRecipient() {
+        return recipient;
     }
 
     /**
-     * Obtém o conteúdo formatado da mensagem, incluindo informações do remetente.
+     * Gets the message content.
      *
-     * @return Uma string formatada com o remetente e o conteúdo da mensagem
+     * @return Message content
      */
-    public String getFormattedContent() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        return sender.getLogin() + " - " + dateFormat.format(timestamp) + "\n" + content;
+    public String getContent() {
+        return content;
     }
 }
