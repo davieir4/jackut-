@@ -17,6 +17,7 @@ public class User implements Serializable {
     private Set<String> friendRequests;
     private Set<String> friends;
     private Queue<Message> messages;
+    private LinkedHashSet<String> communities = new LinkedHashSet<>();
 
     /**
      * Constructor creates a new user with the given credentials.
@@ -162,5 +163,11 @@ public class User implements Serializable {
             throw new IllegalArgumentException("Não há recados.");
         }
         return messages.poll().getContent();
+    }
+    public LinkedHashSet<String> getCommunities(){
+        return this.communities;
+    }
+    public void addCommunity(String name){
+        communities.add(name);
     }
 }

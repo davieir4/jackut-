@@ -2,6 +2,7 @@ package br.ufal.ic.p2.jackut;
 
 import br.ufal.ic.p2.jackut.Exceptions.InvalidLoginException;
 import br.ufal.ic.p2.jackut.Exceptions.UserAlredyExistsException;
+import br.ufal.ic.p2.jackut.Exceptions.UserNotFoundException;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -67,6 +68,9 @@ public class UserManager implements Serializable {
      * @return User object or null if not found
      */
     public User getUserByLogin(String login) {
+        if (!users.containsKey(login)){
+            throw new UserNotFoundException();
+        }
         return users.get(login);
     }
 

@@ -1,5 +1,7 @@
 package br.ufal.ic.p2.jackut;
 
+import br.ufal.ic.p2.jackut.Exceptions.UserNotFoundException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +38,9 @@ public class SessionManager {
      * @return User object or null if session is invalid
      */
     public User getUserFromSession(String sessionId) {
+        if(!sessions.containsKey(sessionId)){
+            throw new UserNotFoundException();
+        }
         return sessions.get(sessionId);
     }
 

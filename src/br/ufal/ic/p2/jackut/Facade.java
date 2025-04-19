@@ -4,8 +4,9 @@ import br.ufal.ic.p2.jackut.Exceptions.InvalidLoginException;
 import br.ufal.ic.p2.jackut.Exceptions.UserAlredyExistsException;
 
 
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 /**
  * Facade class that provides access to the Jackut system functionality.
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class Facade {
     private UserManager userManager;
     private SessionManager sessionManager;
+    private CommunityManager communityManager;
     private SystemPersistence persistence;
 
     /**
@@ -21,10 +23,16 @@ public class Facade {
      */
     public Facade() {
         this.persistence = new SystemPersistence();
-        this.userManager = persistence.loadSystem();
+        this.userManager = persistence.loadUsers();
+        this.communityManager = persistence.loadCommunities();
+
         if (this.userManager == null) {
             this.userManager = new UserManager();
         }
+        if (this.communityManager == null) {
+            this.communityManager = new CommunityManager();
+        }
+
         this.sessionManager = new SessionManager();
     }
 
@@ -34,6 +42,7 @@ public class Facade {
     public void zerarSistema() {
         this.userManager = new UserManager();
         this.sessionManager = new SessionManager();
+        this.communityManager = new CommunityManager();
     }
 
     /**
@@ -198,11 +207,49 @@ public class Facade {
 
         return user.readNextMessage();
     }
+    public void criarComunidade(String session, String name, String description){
+        User owner = sessionManager.getUserFromSession(session);
+        communityManager.registerCommunity(owner, name, description);
+    }
+    public String getDescricaoComunidade(String name){
+        Community community = communityManager.getCommunity(name);
+        return community.getDescription();
+    }
+    public String getDonoComunidade(String name){
+        Community community = communityManager.getCommunity(name);
+        User owner = community.getOwner();
+        return owner.getLogin();
+    }
+    public String getMembrosComunidade(String name) {
+        Community community = communityManager.getCommunity(name);
+        Set<String> members = community.getMembers();
 
+        if (members.isEmpty()) {
+            return "{}";
+        }
+
+        return "{" + String.join(",", members) + "}";
+    }
+    public String getComunidades(String login){
+        User user = userManager.getUserByLogin(login);
+        LinkedHashSet<String> comunidades = user.getCommunities();
+        if (comunidades.isEmpty()) {
+            return "{}";
+        }
+        return "{" + String.join(",", comunidades) + "}";
+
+    }
+    public void adicionarComunidade(String session, String nome){
+        User user = sessionManager.getUserFromSession(session);
+        Community community = communityManager.getCommunity(nome);
+        user.addCommunity(nome);
+        community.addUser(user);
+    }
     /**
      * Saves the system state and terminates.
      */
     public void encerrarSistema() {
-        persistence.saveSystem(userManager);
+        persistence.saveUsers(userManager);
+        persistence.saveCommunities(communityManager);
     }
 }
