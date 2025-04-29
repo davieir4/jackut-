@@ -3,6 +3,7 @@ package br.ufal.ic.p2.jackut;
 import br.ufal.ic.p2.jackut.Exceptions.*;
 
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -312,7 +313,20 @@ public class Facade {
         if(userManager.getUserByLogin(loginInimigo) == null) throw new UserNotFoundException();
         user.addEnemy(loginInimigo);
     }
-
+    public void removerUsuario(String session){
+        User user = sessionManager.getUserFromSession(session);
+        for (String communityName : user.getCommunities()){
+            Community community = communityManager.getCommunity(communityName);
+            if (community.getOwner().equals(user)){
+                for(String memberLogin : community.getMembers()){
+                    User member = userManager.getUserByLogin(memberLogin);
+                    member.getCommunities().remove(community.getName());
+                }
+                communityManager.deleteCommunity(communityName);
+            }
+        }
+        userManager.removeUser(user.getLogin());
+    }
     /**
      * Saves the system state and terminates.
      */

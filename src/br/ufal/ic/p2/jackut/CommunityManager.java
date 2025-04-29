@@ -7,6 +7,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class CommunityManager implements Serializable {
     @Serial
@@ -30,5 +31,8 @@ public class CommunityManager implements Serializable {
             throw new CommunityNotFoundException();
         }
         return communities.get(name);
+    }
+    public void deleteCommunity (String communityName) {
+        communities.remove(communityName);
     }
 }

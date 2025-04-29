@@ -5,10 +5,7 @@ import br.ufal.ic.p2.jackut.Exceptions.UserAlredyExistsException;
 import br.ufal.ic.p2.jackut.Exceptions.UserNotFoundException;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages users in the Jackut system.
@@ -52,7 +49,14 @@ public class UserManager implements Serializable {
      * @throws InvalidLoginException if authentication fails
      */
     public User authenticateUser(String login, String password) {
-        User user = getUserByLogin(login);
+
+
+        User user = null;
+        try {
+            user = getUserByLogin(login);
+        } catch (Exception e) {
+            throw new InvalidLoginException("Login ou senha inválidos.");
+        }
 
         if (user == null || !user.getPassword().equals(password)) {
             throw new InvalidLoginException("Login ou senha inválidos.");
@@ -136,5 +140,21 @@ public class UserManager implements Serializable {
     public void sendMessage(User sender, User recipient, String content) {
         Message message = new Message(sender.getLogin(), recipient.getLogin(), content);
         recipient.addMessage(message);
+    }
+    public void removeUser(String login){
+        if(getUserByLogin(login) == null) throw new UserNotFoundException();
+        User user = users.get(login);
+        user.getEnemies().clear();
+        user.getCrushes().clear();
+        user.getCommunities().clear();
+        user.getFriends().clear();
+        user.idols.clear();
+        user.fans.clear();
+        for (String userReceiverLogin : users.keySet()){
+            User userReceiver = users.get(userReceiverLogin);
+            Queue<Message> messages = userReceiver.getAllMessages();
+            messages.removeIf(message -> message.getSender().equals(login));
+        }
+        this.users.remove(login);
     }
 }

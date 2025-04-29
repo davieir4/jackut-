@@ -31,7 +31,10 @@ public class Main {
                 "tests/us8_1.txt"};
         String[] args12 = {"br.ufal.ic.p2.jackut.Facade",
                 "tests/us8_2.txt"};
-
+        String[] args13 = {"br.ufal.ic.p2.jackut.Facade",
+                "tests/us9_1.txt"};
+        String[] args14 = {"br.ufal.ic.p2.jackut.Facade",
+                "tests/us9_2.txt"};
 
 //        EasyAccept.main(args1);
 //        EasyAccept.main(args2);
@@ -39,15 +42,16 @@ public class Main {
 //        EasyAccept.main(args4);
 
 //        Milestone 2
-//       EasyAccept.main(args5); OK
-//       EasyAccept.main(args6); OK
-//       EasyAccept.main(args7); OK
-//       EasyAccept.main(args8); OK
-//        EasyAccept.main(args9); OK
-//        EasyAccept.main(args10); OK
-//        EasyAccept.main(args11); OK
-//        EasyAccept.main(args12); OK
-
+       EasyAccept.main(args5);
+       EasyAccept.main(args6);
+       EasyAccept.main(args7);
+       EasyAccept.main(args8);
+        EasyAccept.main(args9);
+        EasyAccept.main(args10);
+        EasyAccept.main(args11);
+        EasyAccept.main(args12);
+        EasyAccept.main(args13);
+        EasyAccept.main(args14);
 
     }
 }

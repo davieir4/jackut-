@@ -215,4 +215,7 @@ public class User implements Serializable {
     public Set<String> getEnemies(){
         return this.enemies;
     }
+    public Queue<Message> getAllMessages(){
+        return this.messages;
+    }
 }
