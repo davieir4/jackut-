@@ -1,5 +1,7 @@
 package br.ufal.ic.p2.jackut;
 
+import br.ufal.ic.p2.jackut.Exceptions.*;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -17,8 +19,12 @@ public class User implements Serializable {
     private Set<String> friendRequests;
     private Set<String> friends;
     private Queue<Message> messages;
+    private Queue<String> groupMessages = new LinkedList<>();
     private LinkedHashSet<String> communities = new LinkedHashSet<>();
-
+    public Set<String> idols = new LinkedHashSet<>();
+    public Set<String> fans = new LinkedHashSet<>();
+    private Set<String> crushes = new LinkedHashSet<>();
+    private Set<String> enemies = new LinkedHashSet<>();
     /**
      * Constructor creates a new user with the given credentials.
      *
@@ -95,6 +101,7 @@ public class User implements Serializable {
      * @throws IllegalArgumentException if request already exists
      */
     public void addFriendRequest(String login) {
+
         if (friendRequests.contains(login)) {
             throw new IllegalArgumentException("Usuário já está adicionado como amigo, esperando aceitação do convite.");
         }
@@ -160,7 +167,7 @@ public class User implements Serializable {
      */
     public String readNextMessage() {
         if (messages.isEmpty()) {
-            throw new IllegalArgumentException("Não há recados.");
+            throw new MessageNotFound();
         }
         return messages.poll().getContent();
     }
@@ -169,5 +176,43 @@ public class User implements Serializable {
     }
     public void addCommunity(String name){
         communities.add(name);
+    }
+    public void addGroupMessage(String message, Community community){
+        community.addMessage(message);
+    }
+    public void receiveGroupMessage(String message){
+        groupMessages.add(message);
+    }
+    public String readGroupMessage() {
+        if (groupMessages.isEmpty()) {
+            throw new GroupMessageNotFound();
+        }
+        return groupMessages.poll();
+    }
+    public void addIdol(String loginIdol){
+        idols.add(loginIdol);
+    }
+    public void addFan(String loginFan){
+        fans.add(loginFan);
+    }
+    public void addCrush(String loginCrush){
+        if (loginCrush.equals(this.login)){
+            throw new SelfLoveException();
+        }
+        if(crushes.contains(loginCrush)){
+            throw new CrushAlredyExists();
+        }
+        crushes.add(loginCrush);
+    }
+    public Set<String> getCrushes(){
+        return crushes;
+    }
+    public void addEnemy(String enemyLogin){
+        if (enemies.contains(enemyLogin)) throw new EnemyAlredyExists();
+        if (enemyLogin.equals(this.login)) throw new SelfHateException();
+        enemies.add(enemyLogin);
+    }
+    public Set<String> getEnemies(){
+        return this.enemies;
     }
 }

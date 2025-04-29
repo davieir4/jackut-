@@ -4,6 +4,8 @@ import br.ufal.ic.p2.jackut.Exceptions.AlreadyIsMemberException;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Represents a Community in the Jackut system.
@@ -15,6 +17,7 @@ public class Community implements Serializable {
     private LinkedHashSet<String> members;
     private String name;
     private String description;
+    private Queue<String> groupMessages = new LinkedList<>();
 
     public Community(User owner, String name, String description){
         this.owner = owner;
@@ -40,4 +43,9 @@ public class Community implements Serializable {
         }
         this.members.add(user.getLogin());
     }
+    public void addMessage(String message){
+            groupMessages.add(message);
+
+    }
+
 }

@@ -23,11 +23,15 @@ public class Main {
                "tests/us6_1.txt"};
         String[] args8 = {"br.ufal.ic.p2.jackut.Facade",
                 "tests/us6_2.txt"};
-        //String[] args8 = {"br.ufal.ic.p2.jackut.Facade",
-          //       "tests/us7_2.txt"};
-//
-//        String[] args8 = {"br.ufal.ic.p2.jackut.Facade",
-//                "tests/us8_1.txt", "tests/us8_2.txt"};
+        String[] args9 = {"br.ufal.ic.p2.jackut.Facade",
+                 "tests/us7_1.txt"};
+        String[] args10 = {"br.ufal.ic.p2.jackut.Facade",
+                "tests/us7_2.txt"};
+        String[] args11 = {"br.ufal.ic.p2.jackut.Facade",
+                "tests/us8_1.txt"};
+        String[] args12 = {"br.ufal.ic.p2.jackut.Facade",
+                "tests/us8_2.txt"};
+
 
 //        EasyAccept.main(args1);
 //        EasyAccept.main(args2);
@@ -39,8 +43,10 @@ public class Main {
 //       EasyAccept.main(args6); OK
 //       EasyAccept.main(args7); OK
 //       EasyAccept.main(args8); OK
-
-
+//        EasyAccept.main(args9); OK
+//        EasyAccept.main(args10); OK
+//        EasyAccept.main(args11); OK
+//        EasyAccept.main(args12); OK
 
 
     }

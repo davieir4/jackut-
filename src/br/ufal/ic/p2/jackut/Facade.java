@@ -1,7 +1,6 @@
 package br.ufal.ic.p2.jackut;
 
-import br.ufal.ic.p2.jackut.Exceptions.InvalidLoginException;
-import br.ufal.ic.p2.jackut.Exceptions.UserAlredyExistsException;
+import br.ufal.ic.p2.jackut.Exceptions.*;
 
 
 import java.util.LinkedHashSet;
@@ -122,6 +121,8 @@ public class Facade {
      */
     public void adicionarAmigo(String id, String amigo) {
         User user = sessionManager.getUserFromSession(id);
+        User userAmigo = userManager.getUserByLogin(amigo);
+
         if (user == null) {
             throw new InvalidLoginException("Usuário não cadastrado.");
         }
@@ -134,7 +135,9 @@ public class Facade {
         if (friend == null) {
             throw new InvalidLoginException("Usuário não cadastrado.");
         }
-
+        if (userAmigo.getEnemies().contains(user.getLogin())){
+            throw new EnemyException(userAmigo.getName());
+        }
         userManager.addFriend(user, friend);
     }
 
@@ -175,6 +178,7 @@ public class Facade {
      */
     public void enviarRecado(String id, String destinatario, String recado) {
         User sender = sessionManager.getUserFromSession(id);
+        User receiver = userManager.getUserByLogin(destinatario);
         if (sender == null) {
             throw new InvalidLoginException("Usuário não cadastrado.");
         }
@@ -187,7 +191,9 @@ public class Facade {
         if (recipient == null) {
             throw new InvalidLoginException("Usuário não cadastrado.");
         }
-
+        if (receiver.getEnemies().contains(sender.getLogin())){
+            throw new EnemyException(receiver.getName());
+        }
         userManager.sendMessage(sender, recipient, recado);
     }
 
@@ -245,6 +251,68 @@ public class Facade {
         user.addCommunity(nome);
         community.addUser(user);
     }
+
+    public String lerMensagem(String session){
+        User user = sessionManager.getUserFromSession(session);
+        return user.readGroupMessage();
+    }
+    public void enviarMensagem(String session, String communityName, String message){
+        User user = sessionManager.getUserFromSession(session);
+        Community community = communityManager.getCommunity(communityName);
+        user.addGroupMessage(message, community);
+        for (String memberLogin : community.getMembers()){
+            User member = userManager.getUserByLogin(memberLogin);
+            member.receiveGroupMessage(message);
+        }
+    }
+    public void adicionarIdolo(String session, String loginIdol){
+        User fan = sessionManager.getUserFromSession(session);
+        User idol = userManager.getUserByLogin(loginIdol);
+        if(fan.idols.contains(loginIdol)) throw new IdolAlredyAdded();
+        if(loginIdol.equals(fan.getLogin())) throw new FanOfItself();
+        if(idol.getEnemies().contains(fan.getLogin())) throw new EnemyException(idol.getName());
+        fan.addIdol(loginIdol);
+        idol.addFan(fan.getLogin());
+    }
+    public boolean ehFa(String loginUser, String loginIdol){
+        User user = userManager.getUserByLogin(loginUser);
+        if (user == null || user.idols == null) return false;
+        return user.idols.contains(loginIdol);
+    }
+    public String getFas(String login) {
+        User user = userManager.getUserByLogin(login);
+        return "{" + String.join(",", user.fans) + "}";
+    }
+    public boolean ehPaquera(String session, String paquera){
+        User user = sessionManager.getUserFromSession(session);
+        return user.getCrushes().contains(paquera);
+    }
+    public void adicionarPaquera(String session, String paqueraLogin){
+        User user = sessionManager.getUserFromSession(session);
+        User paquera = userManager.getUserByLogin(paqueraLogin);
+        user.addCrush(paqueraLogin);
+        if(paquera.getEnemies().contains(user.getLogin())) throw new EnemyException(paquera.getName());
+        if(paquera.getCrushes().contains(user.getLogin())){
+            String recadoJackutDefault = "%s é seu paquera - Recado do Jackut.";
+            String recadoJackutUser = String.format(recadoJackutDefault, paquera.getName());
+            String recadoJackutPaquera = String.format(recadoJackutDefault, user.getName());
+            Message systemMessage = new Message("jackut", user.getLogin(), recadoJackutUser);
+            Message systemMessagePaquera = new Message("jackut", paquera.getLogin(), recadoJackutPaquera);
+            user.addMessage(systemMessage);
+            paquera.addMessage(systemMessagePaquera);
+        }
+
+    }
+    public String getPaqueras(String session){
+        User user = sessionManager.getUserFromSession(session);
+        return "{" + String.join(",", user.getCrushes()) + "}";
+    }
+    public void adicionarInimigo(String session, String loginInimigo){
+        User user = sessionManager.getUserFromSession(session);
+        if(userManager.getUserByLogin(loginInimigo) == null) throw new UserNotFoundException();
+        user.addEnemy(loginInimigo);
+    }
+
     /**
      * Saves the system state and terminates.
      */
