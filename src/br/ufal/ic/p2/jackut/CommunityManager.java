@@ -1,13 +1,12 @@
 package br.ufal.ic.p2.jackut;
 
-import br.ufal.ic.p2.jackut.Exceptions.CommunityAlredyExistsException;
+import br.ufal.ic.p2.jackut.Exceptions.CommunityAlreadyExistsException;
 import br.ufal.ic.p2.jackut.Exceptions.CommunityNotFoundException;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class CommunityManager implements Serializable {
     @Serial
@@ -19,7 +18,7 @@ public class CommunityManager implements Serializable {
     }
     public void registerCommunity(User owner, String name, String description){
         if(communities.containsKey(name)){
-            throw new CommunityAlredyExistsException();
+            throw new CommunityAlreadyExistsException();
         }
         Community newCommunity = new Community(owner, name, description);
         communities.put(name, newCommunity);

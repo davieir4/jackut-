@@ -1,7 +1,7 @@
 package br.ufal.ic.p2.jackut;
 
 import br.ufal.ic.p2.jackut.Exceptions.InvalidLoginException;
-import br.ufal.ic.p2.jackut.Exceptions.UserAlredyExistsException;
+import br.ufal.ic.p2.jackut.Exceptions.UserAlreadyExistsException;
 import br.ufal.ic.p2.jackut.Exceptions.UserNotFoundException;
 
 import java.io.Serializable;
@@ -29,11 +29,11 @@ public class UserManager implements Serializable {
      * @param login User's login
      * @param password User's password
      * @param name User's name
-     * @throws UserAlredyExistsException if a user with the given login already exists
+     * @throws UserAlreadyExistsException if a user with the given login already exists
      */
-    public void registerUser(String login, String password, String name) throws UserAlredyExistsException {
+    public void registerUser(String login, String password, String name) throws UserAlreadyExistsException {
         if (users.containsKey(login)) {
-            throw new UserAlredyExistsException("Conta com esse nome já existe.");
+            throw new UserAlreadyExistsException("Conta com esse nome já existe.");
         }
 
         User newUser = new User(login, password, name);
@@ -120,11 +120,11 @@ public class UserManager implements Serializable {
      * @param login User's login
      * @return List of friends' logins
      */
-    public List<String> getFriendsList(String login) {
+    public Set<String> getFriendsList(String login) {
         User user = getUserByLogin(login);
 
         if (user == null) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
 
         return user.getFriends();

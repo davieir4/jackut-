@@ -39,7 +39,7 @@ public class User implements Serializable {
         this.profile = new HashMap<>();
         this.profile.put("nome", name);
         this.friendRequests = new HashSet<>();
-        this.friends = new HashSet<>();
+        this.friends = new LinkedHashSet<>();
         this.messages = new LinkedList<>();
     }
 
@@ -146,8 +146,8 @@ public class User implements Serializable {
      *
      * @return List of friends' logins
      */
-    public List<String> getFriends() {
-        return new ArrayList<>(friends);
+    public Set<String> getFriends() {
+        return new LinkedHashSet<>(friends);
     }
 
     /**
@@ -200,7 +200,7 @@ public class User implements Serializable {
             throw new SelfLoveException();
         }
         if(crushes.contains(loginCrush)){
-            throw new CrushAlredyExists();
+            throw new CrushAlreadyExists();
         }
         crushes.add(loginCrush);
     }
@@ -208,7 +208,7 @@ public class User implements Serializable {
         return crushes;
     }
     public void addEnemy(String enemyLogin){
-        if (enemies.contains(enemyLogin)) throw new EnemyAlredyExists();
+        if (enemies.contains(enemyLogin)) throw new EnemyAlreadyExists();
         if (enemyLogin.equals(this.login)) throw new SelfHateException();
         enemies.add(enemyLogin);
     }
