@@ -5,6 +5,6 @@ package br.ufal.ic.p2.jackut.Exceptions;
  */
 public class GroupMessageNotFound extends RuntimeException {
     public GroupMessageNotFound() {
-        super("Mensagem não encontrada no grupo.");
+        super("Não há mensagens.");
     }
 }

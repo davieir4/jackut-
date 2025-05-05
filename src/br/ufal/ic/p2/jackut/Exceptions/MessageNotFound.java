@@ -5,6 +5,6 @@ package br.ufal.ic.p2.jackut.Exceptions;
  */
 public class MessageNotFound extends RuntimeException {
     public MessageNotFound() {
-        super("Mensagem não encontrada.");
+        super("Não há recados.");
     }
 }
