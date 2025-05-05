@@ -1,0 +1,236 @@
+@startuml Jackut
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam classBackgroundColor LightBlue
+skinparam classBorderColor DarkBlue
+skinparam packageBackgroundColor LightGray
+skinparam arrowColor DarkBlue
+
+package "br.ufal.ic.p2.jackut" {
+  ' Classes principais
+  class Facade {
+    - intern: Intern
+    + zerarSistema(): void
+    + criarUsuario(login: String, senha: String, nome: String): void
+    + abrirSessao(login: String, senha: String): String
+    + getAtributoUsuario(login: String, atributo: String): String
+    + editarPerfil(id: String, atributo: String, valor: String): void
+    + adicionarAmigo(id: String, amigo: String): void
+    + ehAmigo(login: String, amigo: String): boolean
+    + getAmigos(login: String): String
+    + enviarRecado(id: String, destinatario: String, recado: String): void
+    + lerRecado(id: String): String
+    + criarComunidade(id: String, nome: String, descricao: String): void
+    + getDescricaoComunidade(nome: String): String
+    + getDonoComunidade(nome: String): String
+    + getMembrosComunidade(nome: String): String
+    + getComunidades(login: String): String
+    + adicionarComunidade(id: String, nome: String): void
+    + lerMensagem(id: String): String
+    + enviarMensagem(id: String, nomeComunidade: String, mensagem: String): void
+    + adicionarIdolo(id: String, loginIdolo: String): void
+    + ehFa(loginUsuario: String, loginIdolo: String): boolean
+    + getFas(login: String): String
+    + ehPaquera(id: String, paquera: String): boolean
+    + adicionarPaquera(id: String, paqueraLogin: String): void
+    + getPaqueras(id: String): String
+    + adicionarInimigo(id: String, loginInimigo: String): void
+    + removerUsuario(id: String): void
+    + encerrarSistema(): void
+  }
+
+  class Intern {
+    - userManager: UserManager
+    - sessionManager: SessionManager
+    - communityManager: CommunityManager
+    - persistence: SystemPersistence
+    + zerarSistema(): void
+    + criarUsuario(login: String, senha: String, nome: String): void
+    + abrirSessao(login: String, senha: String): String
+    + getAtributoUsuario(login: String, atributo: String): String
+    + editarPerfil(id: String, atributo: String, valor: String): void
+    + adicionarAmigo(id: String, amigo: String): void
+    + ehAmigo(login: String, amigo: String): boolean
+    + getAmigos(login: String): String
+    + enviarRecado(id: String, destinatario: String, recado: String): void
+    + lerRecado(id: String): String
+    + criarComunidade(session: String, name: String, description: String): void
+    + getDescricaoComunidade(name: String): String
+    + getDonoComunidade(name: String): String
+    + getMembrosComunidade(name: String): String
+    + getComunidades(login: String): String
+    + adicionarComunidade(session: String, nome: String): void
+    + lerMensagem(session: String): String
+    + enviarMensagem(session: String, communityName: String, message: String): void
+    + adicionarIdolo(session: String, loginIdol: String): void
+    + ehFa(loginUser: String, loginIdol: String): boolean
+    + getFas(login: String): String
+    + ehPaquera(session: String, paquera: String): boolean
+    + adicionarPaquera(session: String, paqueraLogin: String): void
+    + getPaqueras(session: String): String
+    + adicionarInimigo(session: String, loginInimigo: String): void
+    + removerUsuario(session: String): void
+    + encerrarSistema(): void
+  }
+
+  class User {
+    - serialVersionUID: long
+    - login: String
+    - password: String
+    - name: String
+    - profile: Map<String, String>
+    - friendRequests: Set<String>
+    - friends: Set<String>
+    - messages: Queue<Message>
+    - groupMessages: Queue<String>
+    - communities: LinkedHashSet<String>
+    + idols: Set<String>
+    + fans: Set<String>
+    - crushes: Set<String>
+    - enemies: Set<String>
+    + User(login: String, password: String, name: String)
+    + getLogin(): String
+    + getPassword(): String
+    + getName(): String
+    + getProfileAttribute(attribute: String): String
+    + setProfileAttribute(attribute: String, value: String): void
+    + addFriendRequest(login: String): void
+    + acceptFriendRequest(login: String): void
+    + hasFriendRequest(login: String): boolean
+    + isFriendWith(login: String): boolean
+    + getFriends(): Set<String>
+    + addMessage(message: Message): void
+    + readNextMessage(): String
+    + getCommunities(): LinkedHashSet<String>
+    + addCommunity(name: String): void
+    + addGroupMessage(message: String, community: Community): void
+    + receiveGroupMessage(message: String): void
+    + readGroupMessage(): String
+    + addIdol(loginIdol: String): void
+    + addFan(loginFan: String): void
+    + addCrush(loginCrush: String): void
+    + getCrushes(): Set<String>
+    + addEnemy(enemyLogin: String): void
+    + getEnemies(): Set<String>
+    + getAllMessages(): Queue<Message>
+  }
+
+  class Message {
+    - serialVersionUID: long
+    - sender: String
+    - receiver: String
+    - content: String
+    + Message(sender: String, receiver: String, content: String)
+    + getSender(): String
+    + getReceiver(): String
+    + getContent(): String
+  }
+
+  class Community {
+    - serialVersionUID: long
+    - owner: User
+    - members: LinkedHashSet<String>
+    - name: String
+    - description: String
+    - groupMessages: Queue<String>
+    + Community(owner: User, name: String, description: String)
+    + getOwner(): User
+    + getName(): String
+    + getDescription(): String
+    + getMembers(): LinkedHashSet<String>
+    + addUser(user: User): void
+    + addMessage(message: String): void
+  }
+
+  class UserManager {
+    - serialVersionUID: long
+    - users: Map<String, User>
+    + UserManager()
+    + registerUser(login: String, password: String, name: String): void
+    + authenticateUser(login: String, password: String): User
+    + getUserByLogin(login: String): User
+    + addFriend(requester: User, recipient: User): void
+    + areFriends(login1: String, login2: String): boolean
+    + getFriendsList(login: String): Set<String>
+    + sendMessage(sender: User, recipient: User, content: String): void
+    + removeUser(login: String): void
+  }
+
+  class CommunityManager {
+    - serialVersionUID: long
+    - communities: Map<String, Community>
+    + CommunityManager()
+    + registerCommunity(owner: User, name: String, description: String): void
+    + getCommunity(name: String): Community
+    + deleteCommunity(communityName: String): void
+  }
+
+  class Session {
+    - serialVersionUID: long
+    - id: String
+    - user: User
+    + Session(user: User)
+    + getId(): String
+    + getUser(): User
+  }
+
+  class SessionManager {
+    - sessions: Map<String, User>
+    + SessionManager()
+    + createSession(user: User): String
+    + getUserFromSession(sessionId: String): User
+    + closeSession(sessionId: String): void
+  }
+
+  class SystemPersistence {
+    - USERS_DATA_FILE: String
+    - COMMUNITIES_DATA_FILE: String
+    + saveUsers(userManager: UserManager): void
+    + saveCommunities(communityManager: CommunityManager): void
+    + loadUsers(): UserManager
+    + loadCommunities(): CommunityManager
+  }
+
+  package "Exceptions" {
+    class UserAlreadyExistsException
+    class InvalidLoginException
+    class UserNotFoundException
+    class EnemyException
+    class IdolAlreadyAdded
+    class FanOfItself
+    class MessageNotFound
+    class GroupMessageNotFound
+    class SelfLoveException
+    class CrushAlreadyExists
+    class EnemyAlreadyExists
+    class SelfHateException
+    class CommunityAlreadyExistsException
+    class CommunityNotFoundException
+    class AlreadyIsMemberException
+  }
+
+  ' Relacionamentos
+  Facade *--> "1" Intern: usa >
+
+  Intern *--> "1" UserManager: gerencia usuários >
+  Intern *--> "1" SessionManager: gerencia sessões >
+  Intern *--> "1" CommunityManager: gerencia comunidades >
+  Intern *--> "1" SystemPersistence: persiste dados >
+
+  UserManager *--> "*" User: gerencia >
+  User "*" --> "*" User: amizades >
+  User "1" --> "*" Message: recebe >
+  User "*" --> "*" Community: participa >
+
+  CommunityManager *--> "*" Community: gerencia >
+  Community "1" *--> "1" User: possui dono >
+  Community "*" --> "*" User: possui membros >
+
+  SessionManager *--> "*" User: autentica >
+
+  SystemPersistence ..> UserManager: persiste/recupera >
+  SystemPersistence ..> CommunityManager: persiste/recupera >
+}
+
+@enduml
