@@ -3,50 +3,50 @@ package br.ufal.ic.p2.jackut;
 import java.io.Serializable;
 
 /**
- * Represents a message in the Jackut system.
+ * Representa uma mensagem no sistema Jackut.
  */
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String sender;
-    private String recipient;
+    private String receiver;
     private String content;
 
     /**
-     * Constructor creates a new message.
+     * Construtor cria uma nova mensagem.
      *
-     * @param sender Sender's login
-     * @param recipient Recipient's login
-     * @param content Message content
+     * @param sender   Login do remetente
+     * @param receiver Login do destinatário
+     * @param content    Conteúdo da mensagem
      */
-    public Message(String sender, String recipient, String content) {
+    public Message(String sender, String receiver, String content) {
         this.sender = sender;
-        this.recipient = recipient;
+        this.receiver = receiver;
         this.content = content;
     }
 
     /**
-     * Gets the sender's login.
+     * Retorna o login do sender.
      *
-     * @return Sender's login
+     * @return Login do sender
      */
     public String getSender() {
         return sender;
     }
 
     /**
-     * Gets the recipient's login.
+     * Retorna o login do destinatário.
      *
-     * @return Recipient's login
+     * @return Login do destinatário
      */
-    public String getRecipient() {
-        return recipient;
+    public String getReceiver() {
+        return receiver;
     }
 
     /**
-     * Gets the message content.
+     * Retorna o conteúdo da mensagem.
      *
-     * @return Message content
+     * @return Conteúdo da mensagem
      */
     public String getContent() {
         return content;

@@ -8,28 +8,29 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * Manages users in the Jackut system.
- * Handles user registration, authentication, and interactions between users.
+ * Gerencia os usuários no sistema Jackut.
+ * Responsável pelo registro, autenticação e interações entre usuários.
  */
 public class UserManager implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    // Mapa que armazena os usuários (login -> User)
     private Map<String, User> users;
 
     /**
-     * Constructor initializes the user storage.
+     * Construtor que inicializa o armazenamento de usuários.
      */
     public UserManager() {
         this.users = new HashMap<>();
     }
 
     /**
-     * Registers a new user.
+     * Registra um novo usuário no sistema.
      *
-     * @param login User's login
-     * @param password User's password
-     * @param name User's name
-     * @throws UserAlreadyExistsException if a user with the given login already exists
+     * @param login Login do usuário
+     * @param password Senha do usuário
+     * @param name Nome do usuário
+     * @throws UserAlreadyExistsException se já existir um usuário com o mesmo login
      */
     public void registerUser(String login, String password, String name) throws UserAlreadyExistsException {
         if (users.containsKey(login)) {
@@ -41,16 +42,14 @@ public class UserManager implements Serializable {
     }
 
     /**
-     * Authenticates a user with login and password.
+     * Autentica um usuário com login e senha.
      *
-     * @param login User's login
-     * @param password User's password
-     * @return User object if authentication succeeds
-     * @throws InvalidLoginException if authentication fails
+     * @param login Login do usuário
+     * @param password Senha do usuário
+     * @return Objeto User se a autenticação for bem-sucedida
+     * @throws InvalidLoginException se a autenticação falhar
      */
     public User authenticateUser(String login, String password) {
-
-
         User user = null;
         try {
             user = getUserByLogin(login);
@@ -66,10 +65,11 @@ public class UserManager implements Serializable {
     }
 
     /**
-     * Gets a user by login.
+     * Obtém um usuário pelo login.
      *
-     * @param login User's login
-     * @return User object or null if not found
+     * @param login Login do usuário
+     * @return Objeto User ou null se não encontrado
+     * @throws UserNotFoundException se o usuário não existir
      */
     public User getUserByLogin(String login) {
         if (!users.containsKey(login)){
@@ -79,29 +79,29 @@ public class UserManager implements Serializable {
     }
 
     /**
-     * Adds a friend relationship between two users.
+     * Adiciona uma relação de amizade entre dois usuários.
      *
-     * @param requester User who initiated the request
-     * @param recipient User who receives the request
-     * @throws IllegalArgumentException if users are the same or already friends
+     * @param requester Usuário que iniciou a solicitação
+     * @param recipient Usuário que recebeu a solicitação
+     * @throws IllegalArgumentException se os usuários forem iguais ou já forem amigos
      */
     public void addFriend(User requester, User recipient) {
         if (recipient.hasFriendRequest(requester.getLogin())) {
-            // Reciprocate friend request
+            // Reciprocidade de solicitação de amizade
             requester.acceptFriendRequest(recipient.getLogin());
             recipient.acceptFriendRequest(requester.getLogin());
         } else {
-            // Create new friend request
+            // Cria nova solicitação de amizade
             requester.addFriendRequest(recipient.getLogin());
         }
     }
 
     /**
-     * Checks if two users are friends.
+     * Verifica se dois usuários são amigos.
      *
-     * @param login1 First user's login
-     * @param login2 Second user's login
-     * @return true if they are friends, false otherwise
+     * @param login1 Login do primeiro usuário
+     * @param login2 Login do segundo usuário
+     * @return true se forem amigos, false caso contrário
      */
     public boolean areFriends(String login1, String login2) {
         User user1 = getUserByLogin(login1);
@@ -115,10 +115,10 @@ public class UserManager implements Serializable {
     }
 
     /**
-     * Gets a list of a user's friends.
+     * Obtém a lista de amigos de um usuário.
      *
-     * @param login User's login
-     * @return List of friends' logins
+     * @param login Login do usuário
+     * @return Conjunto de logins dos amigos
      */
     public Set<String> getFriendsList(String login) {
         User user = getUserByLogin(login);
@@ -131,30 +131,43 @@ public class UserManager implements Serializable {
     }
 
     /**
-     * Sends a message from one user to another.
+     * Envia uma mensagem de um usuário para outro.
      *
-     * @param sender Sender user
-     * @param recipient Recipient user
-     * @param content Message content
+     * @param sender Usuário remetente
+     * @param recipient Usuário destinatário
+     * @param content Conteúdo da mensagem
      */
     public void sendMessage(User sender, User recipient, String content) {
         Message message = new Message(sender.getLogin(), recipient.getLogin(), content);
         recipient.addMessage(message);
     }
+
+    /**
+     * Remove um usuário do sistema.
+     *
+     * @param login Login do usuário a ser removido
+     * @throws UserNotFoundException se o usuário não existir
+     */
     public void removeUser(String login){
         if(getUserByLogin(login) == null) throw new UserNotFoundException();
         User user = users.get(login);
+
+        // Limpa todas as relações do usuário
         user.getEnemies().clear();
         user.getCrushes().clear();
         user.getCommunities().clear();
         user.getFriends().clear();
         user.idols.clear();
         user.fans.clear();
+
+        // Remove todas as mensagens enviadas pelo usuário
         for (String userReceiverLogin : users.keySet()){
             User userReceiver = users.get(userReceiverLogin);
             Queue<Message> messages = userReceiver.getAllMessages();
             messages.removeIf(message -> message.getSender().equals(login));
         }
+
+        // Remove o usuário do mapa de usuários
         this.users.remove(login);
     }
 }

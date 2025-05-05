@@ -7,23 +7,23 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Manages user sessions in the Jackut system.
+ * Gerencia as sessões de usuários no sistema Jackut.
  */
 public class SessionManager {
     private Map<String, User> sessions;
 
     /**
-     * Constructor initializes the session storage.
+     * Construtor que inicializa o armazenamento das sessões.
      */
     public SessionManager() {
         this.sessions = new HashMap<>();
     }
 
     /**
-     * Creates a new session for a user.
+     * Cria uma nova sessão para um usuário.
      *
-     * @param user User object
-     * @return Session ID
+     * @param user Objeto do tipo User
+     * @return ID da sessão criada
      */
     public String createSession(User user) {
         String sessionId = UUID.randomUUID().toString();
@@ -32,22 +32,23 @@ public class SessionManager {
     }
 
     /**
-     * Gets a user from a session.
+     * Recupera o usuário associado a uma sessão.
      *
-     * @param sessionId Session ID
-     * @return User object or null if session is invalid
+     * @param sessionId ID da sessão
+     * @return Objeto User correspondente
+     * @throws UserNotFoundException se a sessão não existir
      */
     public User getUserFromSession(String sessionId) {
-        if(!sessions.containsKey(sessionId)){
+        if (!sessions.containsKey(sessionId)) {
             throw new UserNotFoundException();
         }
         return sessions.get(sessionId);
     }
 
     /**
-     * Closes a session.
+     * Encerra uma sessão.
      *
-     * @param sessionId Session ID
+     * @param sessionId ID da sessão a ser encerrada
      */
     public void closeSession(String sessionId) {
         sessions.remove(sessionId);

@@ -2,15 +2,13 @@ package br.ufal.ic.p2.jackut;
 
 import br.ufal.ic.p2.jackut.Exceptions.*;
 
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * The "Intern" class: does all the heavy lifting while the Facade takes the credit.
- * Like a real intern, it handles users, communities, and messages silently.
+ * A classe "Intern": faz todo o trabalho pesado enquanto a Fachada leva o crédito.
+ * Como um estagiário de verdade, ela gerencia usuários, comunidades e mensagens silenciosamente.
  */
-
 public class Intern {
     private UserManager userManager;
     private SessionManager sessionManager;
@@ -18,7 +16,7 @@ public class Intern {
     private SystemPersistence persistence;
 
     /**
-     * Constructor initializes the managers and loads data from persistent storage if available.
+     * Construtor que inicializa os gerenciadores e carrega dados do armazenamento persistente, se disponíveis.
      */
     public Intern() {
         this.persistence = new SystemPersistence();
@@ -36,7 +34,7 @@ public class Intern {
     }
 
     /**
-     * Clears all data from the system.
+     * Limpa todos os dados do sistema.
      */
     public void zerarSistema() {
         this.userManager = new UserManager();
@@ -45,13 +43,13 @@ public class Intern {
     }
 
     /**
-     * Creates a new user in the system.
+     * Cria um novo usuário no sistema.
      *
-     * @param login User's login
-     * @param senha User's password
-     * @param nome User's name
-     * @throws UserAlreadyExistsException if a user with the given login already exists
-     * @throws InvalidLoginException if login or password is invalid
+     * @param login Login do usuário
+     * @param senha Senha do usuário
+     * @param nome Nome do usuário
+     * @throws UserAlreadyExistsException se já existir um usuário com o login fornecido
+     * @throws InvalidLoginException se o login ou a senha forem inválidos
      */
     public void criarUsuario(String login, String senha, String nome) throws UserAlreadyExistsException {
         if (login == null || login.trim().isEmpty()) {
@@ -64,12 +62,12 @@ public class Intern {
     }
 
     /**
-     * Opens a session for a user, authenticating them with login and password.
+     * Abre uma sessão para um usuário, autenticando com login e senha.
      *
-     * @param login User's login
-     * @param senha User's password
-     * @return Session ID
-     * @throws InvalidLoginException if login or password is incorrect
+     * @param login Login do usuário
+     * @param senha Senha do usuário
+     * @return ID da sessão
+     * @throws InvalidLoginException se o login ou senha forem incorretos
      */
     public String abrirSessao(String login, String senha) {
         User user = userManager.authenticateUser(login, senha);
@@ -77,13 +75,13 @@ public class Intern {
     }
 
     /**
-     * Gets an attribute value from a user's profile.
+     * Retorna o valor de um atributo do perfil do usuário.
      *
-     * @param login User's login
-     * @param atributo Attribute name
-     * @return The value of the attribute
-     * @throws InvalidLoginException if user does not exist
-     * @throws IllegalArgumentException if attribute is not set
+     * @param login Login do usuário
+     * @param atributo Nome do atributo
+     * @return Valor do atributo
+     * @throws InvalidLoginException se o usuário não estiver cadastrado
+     * @throws IllegalArgumentException se o atributo não estiver definido
      */
     public String getAtributoUsuario(String login, String atributo) {
         User user = userManager.getUserByLogin(login);
@@ -95,12 +93,12 @@ public class Intern {
     }
 
     /**
-     * Edits a user's profile attribute.
+     * Edita um atributo do perfil do usuário.
      *
-     * @param id Session ID
-     * @param atributo Attribute name
-     * @param valor Attribute value
-     * @throws InvalidLoginException if session is invalid
+     * @param id ID da sessão
+     * @param atributo Nome do atributo
+     * @param valor Novo valor do atributo
+     * @throws InvalidLoginException se a sessão for inválida
      */
     public void editarPerfil(String id, String atributo, String valor) {
         User user = sessionManager.getUserFromSession(id);
@@ -112,12 +110,12 @@ public class Intern {
     }
 
     /**
-     * Adds another user as a friend.
+     * Adiciona outro usuário como amigo.
      *
-     * @param id Session ID
-     * @param amigo Friend's login
-     * @throws InvalidLoginException if session is invalid or friend doesn't exist
-     * @throws IllegalArgumentException if trying to add self or already added
+     * @param id ID da sessão
+     * @param amigo Login do amigo
+     * @throws InvalidLoginException se a sessão for inválida ou o amigo não existir
+     * @throws IllegalArgumentException se tentar adicionar a si mesmo ou já for amigo
      */
     public void adicionarAmigo(String id, String amigo) {
         User user = sessionManager.getUserFromSession(id);
@@ -142,21 +140,21 @@ public class Intern {
     }
 
     /**
-     * Checks if two users are friends.
+     * Verifica se dois usuários são amigos.
      *
-     * @param login First user's login
-     * @param amigo Second user's login
-     * @return true if they are friends, false otherwise
+     * @param login Login do primeiro usuário
+     * @param amigo Login do segundo usuário
+     * @return true se forem amigos, false caso contrário
      */
     public boolean ehAmigo(String login, String amigo) {
         return userManager.areFriends(login, amigo);
     }
 
     /**
-     * Gets a list of a user's friends.
+     * Retorna a lista de amigos de um usuário.
      *
-     * @param login User's login
-     * @return List of friends' logins
+     * @param login Login do usuário
+     * @return Lista de logins dos amigos
      */
     public String getAmigos(String login) {
         Set<String> friends = userManager.getFriendsList(login);
@@ -168,13 +166,13 @@ public class Intern {
     }
 
     /**
-     * Sends a message to another user.
+     * Envia um recado para outro usuário.
      *
-     * @param id Session ID
-     * @param destinatario Recipient's login
-     * @param recado Message content
-     * @throws InvalidLoginException if session is invalid or recipient doesn't exist
-     * @throws IllegalArgumentException if trying to send to self
+     * @param id ID da sessão
+     * @param destinatario Login do destinatário
+     * @param recado Conteúdo do recado
+     * @throws InvalidLoginException se a sessão ou o destinatário forem inválidos
+     * @throws IllegalArgumentException se tentar enviar para si mesmo
      */
     public void enviarRecado(String id, String destinatario, String recado) {
         User sender = sessionManager.getUserFromSession(id);
@@ -198,12 +196,12 @@ public class Intern {
     }
 
     /**
-     * Reads the next message from a user's inbox.
+     * Lê o próximo recado da caixa de entrada do usuário.
      *
-     * @param id Session ID
-     * @return The message content
-     * @throws InvalidLoginException if session is invalid
-     * @throws IllegalArgumentException if inbox is empty
+     * @param id ID da sessão
+     * @return Conteúdo do recado
+     * @throws InvalidLoginException se a sessão for inválida
+     * @throws IllegalArgumentException se a caixa de entrada estiver vazia
      */
     public String lerRecado(String id) {
         User user = sessionManager.getUserFromSession(id);
@@ -213,19 +211,48 @@ public class Intern {
 
         return user.readNextMessage();
     }
+
+    /**
+     * Cria uma nova comunidade.
+     *
+     * @param session ID da sessão do dono
+     * @param name Nome da comunidade
+     * @param description Descrição da comunidade
+     */
     public void criarComunidade(String session, String name, String description){
         User owner = sessionManager.getUserFromSession(session);
         communityManager.registerCommunity(owner, name, description);
     }
+
+    /**
+     * Retorna a descrição de uma comunidade.
+     *
+     * @param name Nome da comunidade
+     * @return Descrição da comunidade
+     */
     public String getDescricaoComunidade(String name){
         Community community = communityManager.getCommunity(name);
         return community.getDescription();
     }
+
+    /**
+     * Retorna o login do dono da comunidade.
+     *
+     * @param name Nome da comunidade
+     * @return Login do dono
+     */
     public String getDonoComunidade(String name){
         Community community = communityManager.getCommunity(name);
         User owner = community.getOwner();
         return owner.getLogin();
     }
+
+    /**
+     * Retorna os membros de uma comunidade.
+     *
+     * @param name Nome da comunidade
+     * @return Conjunto dos logins dos membros
+     */
     public String getMembrosComunidade(String name) {
         Community community = communityManager.getCommunity(name);
         Set<String> members = community.getMembers();
@@ -236,6 +263,13 @@ public class Intern {
 
         return "{" + String.join(",", members) + "}";
     }
+
+    /**
+     * Retorna as comunidades de um usuário.
+     *
+     * @param login Login do usuário
+     * @return Conjunto dos nomes das comunidades
+     */
     public String getComunidades(String login){
         User user = userManager.getUserByLogin(login);
         LinkedHashSet<String> comunidades = user.getCommunities();
@@ -243,8 +277,14 @@ public class Intern {
             return "{}";
         }
         return "{" + String.join(",", comunidades) + "}";
-
     }
+
+    /**
+     * Adiciona o usuário à comunidade.
+     *
+     * @param session ID da sessão do usuário
+     * @param nome Nome da comunidade
+     */
     public void adicionarComunidade(String session, String nome){
         User user = sessionManager.getUserFromSession(session);
         Community community = communityManager.getCommunity(nome);
@@ -252,10 +292,24 @@ public class Intern {
         community.addUser(user);
     }
 
+    /**
+     * Lê a próxima mensagem de grupo.
+     *
+     * @param session ID da sessão
+     * @return Mensagem lida
+     */
     public String lerMensagem(String session){
         User user = sessionManager.getUserFromSession(session);
         return user.readGroupMessage();
     }
+
+    /**
+     * Envia uma mensagem para uma comunidade.
+     *
+     * @param session ID da sessão do remetente
+     * @param communityName Nome da comunidade
+     * @param message Conteúdo da mensagem
+     */
     public void enviarMensagem(String session, String communityName, String message){
         User user = sessionManager.getUserFromSession(session);
         Community community = communityManager.getCommunity(communityName);
@@ -265,6 +319,13 @@ public class Intern {
             member.receiveGroupMessage(message);
         }
     }
+
+    /**
+     * Adiciona um ídolo ao usuário.
+     *
+     * @param session ID da sessão do fã
+     * @param loginIdol Login do ídolo
+     */
     public void adicionarIdolo(String session, String loginIdol){
         User fan = sessionManager.getUserFromSession(session);
         User idol = userManager.getUserByLogin(loginIdol);
@@ -274,19 +335,49 @@ public class Intern {
         fan.addIdol(loginIdol);
         idol.addFan(fan.getLogin());
     }
+
+    /**
+     * Verifica se um usuário é fã de outro.
+     *
+     * @param loginUser Login do fã
+     * @param loginIdol Login do ídolo
+     * @return true se for fã, false caso contrário
+     */
     public boolean ehFa(String loginUser, String loginIdol){
         User user = userManager.getUserByLogin(loginUser);
         if (user == null || user.idols == null) return false;
         return user.idols.contains(loginIdol);
     }
+
+    /**
+     * Retorna os fãs de um usuário.
+     *
+     * @param login Login do ídolo
+     * @return Lista de logins dos fãs
+     */
     public String getFas(String login) {
         User user = userManager.getUserByLogin(login);
         return "{" + String.join(",", user.fans) + "}";
     }
+
+    /**
+     * Verifica se outro usuário é paquera.
+     *
+     * @param session ID da sessão
+     * @param paquera Login do possível paquera
+     * @return true se for paquera, false caso contrário
+     */
     public boolean ehPaquera(String session, String paquera){
         User user = sessionManager.getUserFromSession(session);
         return user.getCrushes().contains(paquera);
     }
+
+    /**
+     * Adiciona um paquera ao perfil do usuário.
+     *
+     * @param session ID da sessão
+     * @param paqueraLogin Login do paquera
+     */
     public void adicionarPaquera(String session, String paqueraLogin){
         User user = sessionManager.getUserFromSession(session);
         User paquera = userManager.getUserByLogin(paqueraLogin);
@@ -301,17 +392,36 @@ public class Intern {
             user.addMessage(systemMessage);
             paquera.addMessage(systemMessagePaquera);
         }
-
     }
+
+    /**
+     * Retorna os paqueras do usuário.
+     *
+     * @param session ID da sessão
+     * @return Lista de logins dos paqueras
+     */
     public String getPaqueras(String session){
         User user = sessionManager.getUserFromSession(session);
         return "{" + String.join(",", user.getCrushes()) + "}";
     }
+
+    /**
+     * Adiciona um inimigo ao perfil do usuário.
+     *
+     * @param session ID da sessão
+     * @param loginInimigo Login do inimigo
+     */
     public void adicionarInimigo(String session, String loginInimigo){
         User user = sessionManager.getUserFromSession(session);
         if(userManager.getUserByLogin(loginInimigo) == null) throw new UserNotFoundException();
         user.addEnemy(loginInimigo);
     }
+
+    /**
+     * Remove o usuário do sistema, incluindo suas comunidades se for dono.
+     *
+     * @param session ID da sessão
+     */
     public void removerUsuario(String session){
         User user = sessionManager.getUserFromSession(session);
         for (String communityName : user.getCommunities()){
@@ -326,8 +436,9 @@ public class Intern {
         }
         userManager.removeUser(user.getLogin());
     }
+
     /**
-     * Saves the system state and terminates.
+     * Salva o estado do sistema e finaliza.
      */
     public void encerrarSistema() {
         persistence.saveUsers(userManager);
